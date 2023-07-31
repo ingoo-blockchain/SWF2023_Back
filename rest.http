@@ -1,0 +1,22 @@
+GET http://127.0.0.1:3005 HTTP/1.1
+Content-type:application/json
+
+### Users
+GET http://127.0.0.1:3005/users HTTP/1.1
+Content-type:application/json
+
+### POST /users
+POST http://127.0.0.1:3005/users HTTP/1.1
+Content-type:application/json
+
+{"account":"0000000000000000000000000000000000000000000000000000000000000000", "user_id":"web7722"}
+
+
+### proposal
+GET http://127.0.0.1:3005/proposal HTTP/1.1
+Content-type:application/json
+
+
+### posts
+GET http://127.0.0.1:3005/posts HTTP/1.1
+Content-type:application/json

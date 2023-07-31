@@ -2,6 +2,7 @@ require('dotenv').config()
 
 const { NODE_ENV } = process.env
 const isDev = NODE_ENV === 'production'
+const SERVER_POST = isDev ? '3005' : '80'
 
 const baseURL = isDev ? 'http://127.0.0.1:4000' : 'https://api.develrocket.com'
 

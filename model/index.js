@@ -1,9 +1,10 @@
 const mysql = require('mysql2')
+const { DB_HOST, DB_USER, DB_PASSWORD, DATABASE } = require('../config')
 
-const host = process.env.DB_HOST || '127.0.0.1'
-const user = process.env.DB_USER || 'root'
-const password = process.env.DB_PASSWORD || 'root'
-const database = process.env.DB_DATABASE || 'LTL'
+const host = DB_HOST || '127.0.0.1'
+const user = DB_USER || 'root'
+const password = DB_PASSWORD || 'root'
+const database = DATABASE || 'LTL'
 
 const connection = mysql.createConnection({
     host,

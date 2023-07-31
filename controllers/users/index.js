@@ -1,62 +1,51 @@
 const express = require('express')
 const router = express.Router()
-const connection = require('../../model/index')
-const multer = require('multer')
-const path = require('path')
+const upload = require('../../routes/upload')
+const startsWith0x = require('../../utils/startWith0x')
+const User = require('../../models/user.model')
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads/') // 업로드된 파일이 저장될 폴더 지정
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-        const extension = path.extname(file.originalname)
-        cb(null, file.fieldname + '-' + uniqueSuffix + extension)
-    },
-})
-
-const upload = multer({ storage: storage })
-
-router.get(`/`, (req, res) => {
-    const query = 'SELECT * FROM users'
-
-    connection.query(query, (err, results) => {
-        if (err) {
-            console.error('Error executing MySQL query:', err)
-            return res.status(500).json({ error: 'Error fetching data from the database' })
-        }
-
-        res.json(results)
-    })
-})
-
-router.post(`/`, (req, res) => {
-    const { account, user_id } = req.body
-
+router.get(`/`, async (req, res, next) => {
     try {
-        if (!account || !user_id) throw new Error('Account 나 유저아이디가 비어있습니다.')
-
-        const query = `INSERT INTO users(account, user_id) values('${account}','${user_id}')`
-        connection.query(query, (err, results) => {
-            if (err) {
-                console.error('Error executing MySQL query:', err)
-                return res.status(500).json({ error: 'Error fetching data from the database' })
-            }
-
-            res.json(results)
-        })
+        const result = User.find()
+        res.json(result)
     } catch (e) {
-        res.status(500).json({ error: e.message })
+        next(e)
     }
 })
 
-router.put(`/profile/:id`, upload.single('p_image'), (req, res) => {
+router.get(`/:account`, async (req, res, next) => {
+    try {
+        const { account } = req.params
+        if (!startsWith0x(account)) throw new Error(`Account 가 Hex표현이 아닙니다.`)
+        if (account.length !== 66) throw new Error(`Account length 가 상이합니다.`)
+
+        const result = User.findByAccount(account)
+        res.json(result)
+    } catch (e) {
+        next(e)
+    }
+})
+
+router.post(`/`, async (req, res, next) => {
+    try {
+        const { account, user_id } = req.body
+        if (!account || !user_id) throw new Error('요청데이터가 옳바르지 않습니다.')
+        if (!startsWith0x(account)) throw new Error(`Account 가 Hex표현이 아닙니다.`)
+        if (account.length !== 66) throw new Error(`Account length 가 상이합니다.`)
+
+        await User.create({ user_id, account })
+        const result = await User.findByAccount(account)
+        res.json(result)
+    } catch (e) {
+        next(e)
+    }
+})
+
+router.put(`/profile/:id`, upload.single('p_image'), async (req, res, next) => {
     try {
         if (!req.file) throw new Error('파일이 제출되지 않았습니다.')
-
         const { id: user_id } = req.params
 
-        // 업로드된 파일의 정보 반환
         const uploadedFile = {
             originalname: req.file.originalname,
             filename: req.file.filename,
@@ -66,18 +55,10 @@ router.put(`/profile/:id`, upload.single('p_image'), (req, res) => {
             path: req.file.path,
         }
 
-        const query = `UPDATE users SET p_image='${uploadedFile.path}' WHERE user_id='${user_id}'`
-        console.log(query)
-        connection.query(query, (err, results) => {
-            if (err) {
-                console.error('Error executing MySQL query:', err)
-                return res.status(500).json({ error: 'Error fetching data from the database' })
-            }
-
-            res.json(results)
-        })
+        const result = await User.updateProfileByUserId({ p_image: uploadedFile.path, user_id })
+        res.json(result)
     } catch (e) {
-        res.status(400).send('error')
+        next(e)
     }
 })
 

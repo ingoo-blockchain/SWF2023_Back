@@ -6,6 +6,8 @@ const user = DB_USER || 'root'
 const password = DB_PASSWORD || 'root'
 const database = DATABASE || 'LTL'
 
+console.log(host, user, password, database)
+
 const connection = mysql.createConnection({
     host,
     user,

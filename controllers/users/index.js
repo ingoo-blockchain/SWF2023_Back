@@ -52,7 +52,7 @@ router.post(`/`, async (req, res, next) => {
             await transferGovernanceToken(signer, account, 1)
             res.status(201).json({ result, isNew: true })
         } else {
-            res.status(200).json({ result, isNew: false })
+            res.status(200).json({ result: user, isNew: false })
         }
     } catch (e) {
         next(e)

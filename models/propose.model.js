@@ -7,7 +7,7 @@ class Propose {
         try {
             const sql = `SELECT * FROM propose WHERE status=? LIMIT ?,?`
             const [rows, fields] = await pool.query(sql, [status, (page - 1) * limit, limit * page])
-
+            console.log(rows)
             return rows
         } catch (e) {
             throw new Error(e.message)

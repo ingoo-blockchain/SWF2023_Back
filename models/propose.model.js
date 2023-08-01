@@ -46,7 +46,7 @@ class Propose {
         }
     }
 
-    static async findByIpfsHash({ IpfsHash }) {
+    static async findByIpfsHash(IpfsHash) {
         try {
             const sql = `SELECT * FROM propose WHERE IpfsHash=?`
             const [rows, fields] = await pool.query(sql, [IpfsHash])
@@ -68,6 +68,17 @@ class Propose {
             const [result] = await Propose.findByUnique({ uuid, account })
 
             return result
+        } catch (e) {
+            throw new Error(e.message)
+        }
+    }
+
+    static async updateByUUID(proposal_id, uuid) {
+        try {
+            const sql = `UPDATE propose SET proposal_id=? WHERE uuid=?`
+
+            const [rows, fields] = await pool.query(sql, [proposal_id, uuid])
+            return rows
         } catch (e) {
             throw new Error(e.message)
         }

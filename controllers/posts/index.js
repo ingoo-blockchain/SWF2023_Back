@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const Proposal = require('../../models/propose.model')
 
 router.get(`/`, async (req, res, next) => {
     try {

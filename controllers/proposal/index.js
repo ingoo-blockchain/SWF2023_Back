@@ -6,7 +6,13 @@ const upload = require('../../routes/upload')
 const { MYHOST, IPFS_URL, ADMIN_PRIVATE_KEY } = require('../../config')
 const auth = require('../../middlewares/auth')
 const Proposal = require('../../models/propose.model')
-const { getProposalState, queueAndExecuteProposal, createSigner, provider } = require('../../utils/ethers')
+const {
+    getProposalVotes,
+    getProposalState,
+    queueAndExecuteProposal,
+    createSigner,
+    provider,
+} = require('../../utils/ethers')
 const { v4: uuid4 } = require('uuid')
 // pinata service
 const PinataService = ({ metadata, uniqueKey }) => {
@@ -64,9 +70,10 @@ router.get(`/`, async (req, res, next) => {
     }
 })
 
-router.get('/votes', async (req, res, next) => {
+router.get('/votes/:proposal_id', async (req, res, next) => {
     try {
-        const result = await Proposal.getProposalVotes()
+        const { proposal_id } = req.params
+        const result = await getProposalVotes(proposal_id)
         res.json(result)
     } catch (e) {
         next(e)
@@ -77,8 +84,9 @@ router.get(`/ipfs/:IpfsHash`, async (req, res, next) => {
     try {
         const { IpfsHash } = req.params
         if (!IpfsHash) throw new Error('IpfsHash 값이 존재하지 않습니다.')
-        const result = await Proposal.findByIpfsHash(IpfsHash)
-        return result
+        const [result] = await Proposal.findByIpfsHash(IpfsHash)
+        console.log(result)
+        res.json(result)
     } catch (e) {
         next(e)
     }
@@ -104,11 +112,33 @@ router.get('/:proposal_id/status', async (req, res, next) => {
     }
 })
 
+router.patch(`/`, async (req, res, next) => {
+    try {
+        const { proposal_id, uuid } = req.body
+
+        if (!proposal_id || !uuid) throw new Error('proposal_id or uuid 가 없습니다].')
+
+        const result = await Proposal.updateByUUID(proposal_id, uuid)
+
+        setTimeout(async () => {
+            const statusCode = await getProposalState(proposal_id)
+            if (statusCode === 4) {
+                // 서명객체만들기
+                const signer = createSigner(ADMIN_PRIVATE_KEY, provider)
+                queueAndExecuteProposal(signer, uniqueKey, IpfsHash)
+            }
+        }, 3 * 60 * 1000 + 3 * 1000)
+
+        res.json(result)
+    } catch (e) {
+        next(e)
+    }
+})
+
 // thumbnal 등록
 router.post('/', auth, upload.single('thumbnail'), async (req, res, next) => {
     try {
         const { title, content } = req.body
-
         const {
             user,
             file: { path: thumbnail },
@@ -133,6 +163,7 @@ router.post('/', auth, upload.single('thumbnail'), async (req, res, next) => {
 
         res.status(201).json({
             account: user.account,
+            uuid,
             IpfsHash,
             uuid,
             ipfs: `${IPFS_URL}/${IpfsHash}`,

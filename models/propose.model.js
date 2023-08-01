@@ -46,18 +46,29 @@ class Propose {
         }
     }
 
-    static async create({ account, proposal_id, IpfsHash }) {
+    static async create({ account, IpfsHash, uuid }) {
         try {
-            const sql = `INSERT INTO propose(account, proposal_id,IpfsHash) values(?, ?, ?)`
-            const [rows, fields] = await pool.query(sql, [account, proposal_id, IpfsHash])
+            const sql = `INSERT INTO propose(account,IpfsHash,uuid) values(?, ?, ?)`
+            const [rows, fields] = await pool.query(sql, [account, IpfsHash, uuid])
 
             if (!rows.affectedRows) {
                 throw new Error('Proposal 이 등록되지 않았습니다.')
             }
 
-            const [result] = await Propose.findByUnique({ proposal_id, account })
+            const [result] = await Propose.findByUnique({ uuid, account })
 
             return result
+        } catch (e) {
+            throw new Error(e.message)
+        }
+    }
+
+    static async updateByUUID(proposal_id, uuid) {
+        try {
+            const sql = `UPDATE propose SET proposal_id=? WHERE uuid=?`
+
+            const [rows, fields] = await pool.query(sql, [proposal_id, uuid])
+            return rows
         } catch (e) {
             throw new Error(e.message)
         }

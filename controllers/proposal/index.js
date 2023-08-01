@@ -7,6 +7,7 @@ const { MYHOST, IPFS_URL, ADMIN_PRIVATE_KEY } = require('../../config')
 const auth = require('../../middlewares/auth')
 const Proposal = require('../../models/propose.model')
 const { getProposalState, queueAndExecuteProposal, createSigner, provider } = require('../../utils/ethers')
+const { v4: uuid4 } = require('uuid')
 
 // pinata service
 const PinataService = ({ metadata, uniqueKey }) => {
@@ -61,11 +62,33 @@ router.get('/:proposal_id/status', async (req, res, next) => {
     }
 })
 
+router.patch(`/`, async (req, res, next) => {
+    try {
+        const { proposal_id, uuid } = req.body
+
+        if (!proposal_id || !uuid) throw new Error('proposal_id or uuid 가 없습니다].')
+
+        const result = await Proposal.updateByUUID(proposal_id, uuid)
+
+        setTimeout(async () => {
+            const statusCode = await getProposalState(proposal_id)
+            if (statusCode === 4) {
+                // 서명객체만들기
+                const signer = createSigner(ADMIN_PRIVATE_KEY, provider)
+                queueAndExecuteProposal(signer, uniqueKey, IpfsHash)
+            }
+        }, 3 * 60 * 1000 + 3 * 1000)
+
+        res.json(result)
+    } catch (e) {
+        next(e)
+    }
+})
+
 // thumbnal 등록
 router.post('/', auth, upload.single('thumbnail'), async (req, res, next) => {
     try {
-        const { title, content, proposal_id } = req.body
-
+        const { title, content } = req.body
         const {
             user,
             file: { path: thumbnail },
@@ -77,27 +100,19 @@ router.post('/', auth, upload.single('thumbnail'), async (req, res, next) => {
             user,
             thumbnail: `${MYHOST}/${thumbnail}`,
         }
-
-        const uniqueKey = `${user.account}:${proposal_id}`
+        const uuid = uuid4()
+        const uniqueKey = `${user.account}:${uuid}`
         const PinataServiceMessage = {
             metadata,
             uniqueKey,
         }
 
         const { IpfsHash } = await PinataService(PinataServiceMessage)
-        await Proposal.create({ account: user.account, proposal_id, IpfsHash })
-
-        setTimeout(async () => {
-            const statusCode = await getProposalState(proposal_id)
-            if (statusCode === 4) {
-                // 서명객체만들기
-                const signer = createSigner(ADMIN_PRIVATE_KEY, provider)
-                queueAndExecuteProposal(signer, uniqueKey, IpfsHash)
-            }
-        }, 3 * 60 * 1000 + 3 * 1000)
+        await Proposal.create({ account: user.account, IpfsHash, uuid })
 
         res.status(201).json({
             account: user.account,
+            uuid,
             IpfsHash,
             ipfs: `${IPFS_URL}/${IpfsHash}`,
         })

@@ -15,6 +15,7 @@ governor.on('ProposalExecuted', (profosalId) => {
 
 app.use(
     cors({
+        origin: true,
         credentials: true,
     }),
 )

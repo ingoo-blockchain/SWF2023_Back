@@ -42,6 +42,15 @@ router.get(`/`, async (req, res, next) => {
     }
 })
 
+router.get('/votes', async (req, res, next) => {
+    try {
+        const result = await getProposalVotes()
+        res.json(result)
+    } catch (e) {
+        next(e)
+    }
+})
+
 router.get('/:proposal_id', async (req, res, next) => {
     try {
         const { proposal_id } = req.params

@@ -6,7 +6,13 @@ const upload = require('../../routes/upload')
 const { MYHOST, IPFS_URL, ADMIN_PRIVATE_KEY } = require('../../config')
 const auth = require('../../middlewares/auth')
 const Proposal = require('../../models/propose.model')
-const { getProposalState, queueAndExecuteProposal, createSigner, provider } = require('../../utils/ethers')
+const {
+    getProposalVotes,
+    getProposalState,
+    queueAndExecuteProposal,
+    createSigner,
+    provider,
+} = require('../../utils/ethers')
 const { v4: uuid4 } = require('uuid')
 // pinata service
 const PinataService = ({ metadata, uniqueKey }) => {
@@ -64,9 +70,10 @@ router.get(`/`, async (req, res, next) => {
     }
 })
 
-router.get('/votes', async (req, res, next) => {
+router.get('/votes/:proposal_id', async (req, res, next) => {
     try {
-        const result = await Proposal.getProposalVotes()
+        const { proposal_id } = req.params
+        const result = await getProposalVotes(proposal_id)
         res.json(result)
     } catch (e) {
         next(e)
@@ -77,8 +84,9 @@ router.get(`/ipfs/:IpfsHash`, async (req, res, next) => {
     try {
         const { IpfsHash } = req.params
         if (!IpfsHash) throw new Error('IpfsHash 값이 존재하지 않습니다.')
-        const result = await Proposal.findByIpfsHash(IpfsHash)
-        return result
+        const [result] = await Proposal.findByIpfsHash(IpfsHash)
+        console.log(result)
+        res.json(result)
     } catch (e) {
         next(e)
     }
@@ -143,7 +151,7 @@ router.post('/', auth, upload.single('thumbnail'), async (req, res, next) => {
             thumbnail: `${MYHOST}/${thumbnail}`,
         }
 
-        const uuid = uudi4()
+        const uuid = uuid4()
         const uniqueKey = `${user.account}:${uuid}`
         const PinataServiceMessage = {
             metadata,

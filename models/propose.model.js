@@ -46,7 +46,7 @@ class Propose {
         }
     }
 
-    static async findByIpfsHash({ IpfsHash }) {
+    static async findByIpfsHash(IpfsHash) {
         try {
             const sql = `SELECT * FROM propose WHERE IpfsHash=?`
             const [rows, fields] = await pool.query(sql, [IpfsHash])

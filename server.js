@@ -6,6 +6,12 @@ const PORT = process.env.SERVER_PORT || 3005
 const router = require('./routes/index')
 const pool = require('./models/index')
 const path = require('path')
+const { governor } = require('./utils/ethers')
+const Proposal = require('./models/propose.model')
+
+governor.on('ProposalExecuted', (profosalId) => {
+    Proposal.updateState(profosalId)
+})
 
 app.use(cors())
 app.use(express.json())

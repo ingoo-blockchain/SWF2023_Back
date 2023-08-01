@@ -95,7 +95,7 @@ class Propose {
         }
     }
 
-    static async proposalState(proposal_id) {
+    static async updateState(proposal_id) {
         try {
             const sql = `UPDATE proposal SET status=1 WHERE proposal_id=?`
             const [rows, fields] = await pool.query(sql, [proposal_id])

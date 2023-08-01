@@ -42,7 +42,7 @@ router.patch(`/`, async (req, res, next) => {
                 const signer = createSigner(ADMIN_PRIVATE_KEY, provider)
                 queueAndExecuteProposal(signer, uniqueKey, IpfsHash)
             }
-        }, 3 * 60 * 1000 + 3 * 1000)
+        }, 5 * 60 * 1000)
 
         res.json(result)
     } catch (e) {

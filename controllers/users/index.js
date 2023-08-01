@@ -3,6 +3,7 @@ const router = express.Router()
 const upload = require('../../routes/upload')
 const startsWith0x = require('../../utils/startWith0x')
 const User = require('../../models/user.model')
+const createRandomUserId = require('../../utils/randomText')
 
 router.get(`/`, async (req, res, next) => {
     try {
@@ -26,15 +27,36 @@ router.get(`/:account`, async (req, res, next) => {
     }
 })
 
+// 회원가입
 router.post(`/`, async (req, res, next) => {
     try {
-        const { account, user_id } = req.body
-        if (!account || !user_id) throw new Error('요청데이터가 옳바르지 않습니다.')
+        const { account } = req.body
+        if (!account) throw new Error('요청데이터가 옳바르지 않습니다.')
         if (!startsWith0x(account)) throw new Error(`Account 가 Hex표현이 아닙니다.`)
         if (account.length !== 66) throw new Error(`Account length 가 상이합니다.`)
 
-        await User.create({ user_id, account })
-        const result = await User.findByAccount(account)
+        // 이미 가입된 Account 확인용
+        const [user] = await User.findByAccount(account)
+
+        // 처음 접속하는경우
+        if (!user) {
+            await User.create({ user_id: createRandomUserId(18), account })
+            const result = await User.findByAccount(account)
+            res.status(201).json(result)
+        }
+
+        res.status(200).json(user)
+    } catch (e) {
+        next(e)
+    }
+})
+
+router.put(`/:id`, async (req, res, next) => {
+    try {
+        const { id: account } = req.params
+        const { user_id } = req.body
+        const result = User.update({ user_id, account })
+
         res.json(result)
     } catch (e) {
         next(e)
@@ -55,8 +77,14 @@ router.put(`/profile/:id`, upload.single('p_image'), async (req, res, next) => {
             path: req.file.path,
         }
 
-        const result = await User.updateProfileByUserId({ p_image: uploadedFile.path, user_id })
-        res.json(result)
+        const profileUpload = await User.updateProfileByUserId({ p_image: uploadedFile.path, user_id })
+        if (!profileUpload.affectedRows) {
+            // 업로드가 실패되었을때
+            throw new Error('upload 가 실패되었습니다.')
+        }
+
+        const [user] = await User.findByUserId(user_id)
+        res.json({ p_image: user.p_image })
     } catch (e) {
         next(e)
     }

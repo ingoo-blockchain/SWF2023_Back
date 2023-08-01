@@ -58,6 +58,16 @@ class User {
             throw new Error(e.message)
         }
     }
+
+    static async update({ user_id, account }) {
+        try {
+            const sql = `UPDATE users SET user_id=? WHERE account=?`
+            const [rows, fields] = await pool.query(sql, [user_id, account])
+            return rows
+        } catch (e) {
+            throw new Error(e.message)
+        }
+    }
 }
 
 module.exports = User

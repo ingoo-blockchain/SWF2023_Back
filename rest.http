@@ -13,8 +13,12 @@ Content-type:application/json
 POST http://127.0.0.1:8080/users HTTP/1.1
 Content-type:application/json
 
-{"account":"0x0000000000000000000000000000000000000000000000000000000000000000", "user_id":"web7722"}
+{"account":"0x0000000000000000000000000000000000000000000000000000000000000000"}
 
+# response
+# {
+#     "p_image": "public/uploads/p_image-1690852716803-415628723.png"
+# }
 
 ### proposal
 GET http://127.0.0.1:3005/proposal HTTP/1.1

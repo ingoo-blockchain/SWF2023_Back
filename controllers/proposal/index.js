@@ -121,7 +121,7 @@ router.post('/', auth, upload.single('thumbnail'), async (req, res, next) => {
             thumbnail: `${MYHOST}/${thumbnail}`,
         }
 
-        const uuid = uudi4()
+        const uuid = uuid4()
         const uniqueKey = `${user.account}:${uuid}`
         const PinataServiceMessage = {
             metadata,

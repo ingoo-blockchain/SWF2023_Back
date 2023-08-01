@@ -41,7 +41,7 @@ router.get(`/`, async (req, res, next) => {
     }
 })
 
-router.get('/getProposalVotes', async (req, res, next) => {
+router.get('/votes', async (req, res, next) => {
     try {
         const result = await getProposalVotes()
         res.json(result)

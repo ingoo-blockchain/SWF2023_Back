@@ -4,6 +4,8 @@ const upload = require('../../routes/upload')
 const startsWith0x = require('../../utils/startWith0x')
 const User = require('../../models/user.model')
 const createRandomUserId = require('../../utils/randomText')
+const { createSigner, provider, transferGovernanceToken } = require('../../utils/ethers')
+const { ADMIN_PRIVATE_KEY } = require('../../config')
 
 router.get(`/`, async (req, res, next) => {
     try {
@@ -18,7 +20,7 @@ router.get(`/:account`, async (req, res, next) => {
     try {
         const { account } = req.params
         if (!startsWith0x(account)) throw new Error(`Account 가 Hex표현이 아닙니다.`)
-        if (account.length !== 66) throw new Error(`Account length 가 상이합니다.`)
+        if (account.length !== 42) throw new Error(`Account length 가 상이합니다.`)
 
         const result = User.findByAccount(account)
         res.json(result)
@@ -33,15 +35,20 @@ router.post(`/`, async (req, res, next) => {
         const { account } = req.body
         if (!account) throw new Error('요청데이터가 옳바르지 않습니다.')
         if (!startsWith0x(account)) throw new Error(`Account 가 Hex표현이 아닙니다.`)
-        if (account.length !== 66) throw new Error(`Account length 가 상이합니다.`)
+        if (account.length !== 42) throw new Error(`Account length 가 상이합니다.`)
 
         // 이미 가입된 Account 확인용
         const [user] = await User.findByAccount(account)
 
         // 처음 접속하는경우
         if (!user) {
+            console.info(`Create User`)
             await User.create({ user_id: createRandomUserId(18), account })
             const result = await User.findByAccount(account)
+
+            // Singer 만들기
+            const signer = createSigner(ADMIN_PRIVATE_KEY, provider)
+            await transferGovernanceToken(signer, account, 1)
             res.status(201).json(result)
         }
 

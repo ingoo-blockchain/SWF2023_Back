@@ -13,13 +13,10 @@ CREATE TABLE users (
 
 CREATE TABLE propose (
     account VARCHAR(66) NOT NULL,
-    proposal_id varchar(32) NOT NULL,
+    proposal_id varchar(255) NOT NULL,
+    status int NOT NULL DEFAULT 0,
+    IpfsHash varchar(100) NOT NULL,
+    created_at DATETIME NOT NULL default now(),
     PRIMARY KEY (account, proposal_id)
 );
 
-
-CREATE TABLE posts (
-    account VARCHAR(66) NOT NULL,
-    proposal_id varchar(32) NOT NULL,
-    PRIMARY KEY (account, proposal_id)
-);

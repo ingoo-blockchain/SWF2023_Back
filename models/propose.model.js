@@ -27,7 +27,7 @@ class Propose {
 
     static async findByProposalId(proposal_id) {
         try {
-            const sql = 'SELECT * FROM users WHERE proposal_id=?'
+            const sql = 'SELECT * FROM propse WHERE proposal_id=?'
             const [rows, fields] = await pool.query(sql, [proposal_id])
 
             return rows
@@ -36,13 +36,28 @@ class Propose {
         }
     }
 
-    static async create({ account, proposal_id }) {
+    static async findByUnique({ proposal_id, account }) {
         try {
-            const sql = `INSERT INTO users(account, proposal_id) values(?, ?)`
+            const sql = `SELECT * FROM propose WHERE account=? AND proposal_id=?`
             const [rows, fields] = await pool.query(sql, [account, proposal_id])
-
-            console.log(rows.affectedRows)
             return rows
+        } catch (e) {
+            throw new Error(e.message)
+        }
+    }
+
+    static async create({ account, proposal_id, IpfsHash }) {
+        try {
+            const sql = `INSERT INTO propose(account, proposal_id,IpfsHash) values(?, ?, ?)`
+            const [rows, fields] = await pool.query(sql, [account, proposal_id, IpfsHash])
+
+            if (!rows.affectedRows) {
+                throw new Error('Proposal 이 등록되지 않았습니다.')
+            }
+
+            const [result] = await Propose.findByUnique({ proposal_id, account })
+
+            return result
         } catch (e) {
             throw new Error(e.message)
         }

@@ -46,7 +46,17 @@ class Propose {
         }
     }
 
-    static async create({ account, IpfsHash, uuid }) {
+    static async findByIpfsHash({ IpfsHash }) {
+        try {
+            const sql = `SELECT * FROM propose WHERE IpfsHash=?`
+            const [rows, fields] = await pool.query(sql, [IpfsHash])
+            return rows
+        } catch (e) {
+            throw new Error(e.message)
+        }
+    }
+
+    static async create({ account, proposal_id, IpfsHash }) {
         try {
             const sql = `INSERT INTO propose(account,IpfsHash,uuid) values(?, ?, ?)`
             const [rows, fields] = await pool.query(sql, [account, IpfsHash, uuid])

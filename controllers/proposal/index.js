@@ -34,7 +34,7 @@ router.get(`/`, async (req, res, next) => {
         const { page, limit } = req.query
 
         if (!page || !limit) throw new Error('page, limit query 가 필요합니다.')
-        const result = await Proposal.find(0, page, limit)
+        const result = await Proposal.find(page, limit, 0)
 
         res.json(result)
     } catch (e) {
@@ -44,8 +44,19 @@ router.get(`/`, async (req, res, next) => {
 
 router.get('/votes', async (req, res, next) => {
     try {
-        const result = await getProposalVotes()
+        const result = await Proposal.getProposalVotes()
         res.json(result)
+    } catch (e) {
+        next(e)
+    }
+})
+
+router.get(`/ipfs`, async (req, res, next) => {
+    try {
+        const { IpfsHash } = req.body
+        if (!IpfsHash) throw new Error('IpfsHash 값이 존재하지 않습니다.')
+        const result = await Proposal.findByIpfsHash(IpfsHash)
+        return result
     } catch (e) {
         next(e)
     }

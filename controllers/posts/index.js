@@ -7,7 +7,7 @@ router.get(`/`, async (req, res, next) => {
         const { page, limit } = req.query
 
         if (!page || !limit) throw new Error('page, limit query 가 필요합니다.')
-        const result = await Proposal.find(1, page, limit)
+        const result = await Proposal.find(page, limit, 1)
 
         res.json(result)
     } catch (e) {

@@ -73,9 +73,9 @@ router.get('/votes', async (req, res, next) => {
     }
 })
 
-router.get(`/ipfs`, async (req, res, next) => {
+router.get(`/ipfs/:IpfsHash`, async (req, res, next) => {
     try {
-        const { IpfsHash } = req.body
+        const { IpfsHash } = req.params
         if (!IpfsHash) throw new Error('IpfsHash 값이 존재하지 않습니다.')
         const result = await Proposal.findByIpfsHash(IpfsHash)
         return result

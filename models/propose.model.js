@@ -3,10 +3,10 @@ const pool = require('./index')
 // proposal_id
 // account
 class Propose {
-    static async find() {
+    static async find(page, limit, status) {
         try {
-            const sql = `SELECT * FROM propose`
-            const [rows, fields] = await pool.query(sql)
+            const sql = `SELECT * FROM propose WHERE status=? LIMIT ?,?`
+            const [rows, fields] = await pool.query(sql, [status, (page - 1) * limit, limit * page])
 
             return rows
         } catch (e) {
@@ -25,10 +25,10 @@ class Propose {
         }
     }
 
-    static async findByProposalId(proposal_id) {
+    static async findByProposalId(proposal_id, status) {
         try {
-            const sql = 'SELECT * FROM propse WHERE proposal_id=?'
-            const [rows, fields] = await pool.query(sql, [proposal_id])
+            const sql = 'SELECT * FROM propse WHERE proposal_id=? AND status=?'
+            const [rows, fields] = await pool.query(sql, [proposal_id, status])
 
             return rows
         } catch (e) {
@@ -78,6 +78,17 @@ class Propose {
         try {
             const sql = `UPDATE users SET proposal_id=? WHERE user_id=?`
             const [rows, fields] = await pool.query(sql, [proposal_id, user_id])
+
+            return rows
+        } catch (e) {
+            throw new Error(e.message)
+        }
+    }
+
+    static async proposalState(proposal_id) {
+        try {
+            const sql = `UPDATE proposal SET status=1 WHERE proposal_id=?`
+            const [rows, fields] = await pool.query(sql, [proposal_id])
 
             return rows
         } catch (e) {

@@ -43,8 +43,8 @@ const getProposalState = async (proposalId) => {
 const getProposalVotes = async (proposalId) => {
     const proposalVotes = await governor.proposalVotes(proposalId)
     return {
-        against: proposalVotes[0],
-        for: proposalVotes[1],
+        against: fromWei(proposalVotes[0]),
+        for: fromWei(proposalVotes[1]),
     }
 }
 
@@ -69,6 +69,7 @@ const retrievePosting = async (key) => {
 
 module.exports = {
     provider,
+    governor,
     toWei,
     fromWei,
     createSigner,

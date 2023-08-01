@@ -21,7 +21,7 @@ Content-type:application/json
 # }
 
 ### proposal
-GET http://127.0.0.1:8080/proposal HTTP/1.1
+GET http://127.0.0.1:8080/proposal?page=1&limit=10 HTTP/1.1
 Content-type:application/json
 
 ### proposal pinata
@@ -32,3 +32,11 @@ Content-type:application/json
 ### posts
 GET http://127.0.0.1:8080/posts HTTP/1.1
 Content-type:application/json
+
+### Proposal/ipfs
+GET http://127.0.0.1:8080/proposal/ipfs HTTP/1.1
+Content-type:application/json
+
+{
+    "IpfsHash":"QmX1L3keRQusuQbjZyG31AQYu4zUyvuxT4zfNpoTSjPQsA"
+}

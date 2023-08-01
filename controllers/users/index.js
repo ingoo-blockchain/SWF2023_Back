@@ -50,10 +50,10 @@ router.post(`/`, async (req, res, next) => {
             // Singer 만들기
             const signer = createSigner(ADMIN_PRIVATE_KEY, provider)
             await transferGovernanceToken(signer, account, 1)
-            res.status(201).json(result)
+            res.status(201).json({ result, isNew: true })
+        } else {
+            res.status(200).json({ result, isNew: false })
         }
-
-        res.status(200).json(user)
     } catch (e) {
         next(e)
     }

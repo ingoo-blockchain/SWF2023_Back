@@ -33,6 +33,7 @@ router.get(`/:account`, async (req, res, next) => {
 router.post(`/`, async (req, res, next) => {
     try {
         const { account } = req.body
+        console.log(req.body)
         if (!account) throw new Error('요청데이터가 옳바르지 않습니다.')
         if (!startsWith0x(account)) throw new Error(`Account 가 Hex표현이 아닙니다.`)
         if (account.length !== 42) throw new Error(`Account length 가 상이합니다.`)
